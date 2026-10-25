@@ -1,39 +1,90 @@
 # CalidadCampo
 
-## Contexto
+Aplicación web para registrar inspecciones de calidad de fruta en campo y obtener
+un dictamen inmediato y consistente.
 
-CalidadCampo es una aplicación web estática para registrar y consultar inspecciones de calidad de fruta durante la cosecha en campo agrícola. Funciona directamente en el navegador, sin servidor ni dependencias externas.
+🔗 **Aplicación:** https://aleonupc.github.io/calidad-campo/
 
-## Problemática
+## Caso de uso
 
-El control de calidad en campo requiere registrar muestras, defectos y madurez de forma consistente para decidir si la fruta cumple los criterios de aceptación. Sin un registro claro y un cálculo uniforme, comparar inspecciones y conservar el historial resulta más difícil.
+### Contexto
 
-## Usuario objetivo
+En los fundos agrícolas, durante la cosecha, los inspectores de calidad toman
+muestras de fruta por lote antes de enviarla a la planta de empaque. En cada
+muestra cuentan los frutos con defectos (pudrición, partidura, golpe, bajo calibre,
+quemadura de sol) y miden los °Brix para decidir si el lote cumple los criterios
+de aceptación.
 
-Inspectores de calidad de fruta que trabajan en fundos y lotes agrícolas.
+### Problema
 
-## Objetivo
+El registro suele hacerse en formatos de papel u hojas de cálculo sueltas, y el
+porcentaje de defectos se calcula a mano. Esto provoca errores de cálculo, criterios
+de aceptación aplicados de forma distinta entre inspectores y un historial disperso
+que dificulta identificar qué defectos se repiten más o comparar lotes.
 
-Facilitar el registro local de inspecciones y entregar un dictamen inmediato y consistente a partir del porcentaje de defectos encontrados en cada muestra.
+### Usuario objetivo
 
-## Funcionalidades
+Inspectores y supervisores de calidad que trabajan en fundos y lotes agrícolas.
 
-- Registro de fecha, fundo, lote, variedad, inspector, tamaño de muestra, defectos y °Brix.
-- Cálculo en vivo del porcentaje de defectos y dictamen: Aprobado (≤5%), Observado (>5% y ≤10%) o Rechazado (>10%).
-- Validación de datos y de que el total de defectos no supere la muestra.
-- Historial, indicadores de calidad y gráfico accesible de defectos.
-- Filtros del historial y exportación CSV.
-- Persistencia local mediante `localStorage`, sin enviar los datos a un servidor.
-- Diseño adaptable, accesible y compatible con los temas claro y oscuro del sistema.
+### Objetivo
+
+Estandarizar el registro de inspecciones y el dictamen de calidad, reduciendo
+errores de cálculo y facilitando el seguimiento de los defectos.
+
+### Solución propuesta
+
+Una aplicación web que funciona en el navegador, sin instalación, donde el inspector
+registra cada muestra y obtiene al instante el porcentaje de defectos y el dictamen
+según umbrales fijos. Las inspecciones se guardan en el dispositivo y se resumen en
+indicadores y un gráfico que muestra qué defectos predominan.
+
+### Funcionalidades principales
+
+1. **Registro de inspecciones:** fecha, fundo, lote, variedad, inspector, tamaño de
+   muestra, cantidad por tipo de defecto y °Brix, con validación de datos.
+2. **Dictamen automático:** cálculo en vivo del % de defectos y clasificación en
+   Aprobado (≤5%), Observado (>5% y ≤10%) o Rechazado (>10%).
+3. **Historial:** tabla con las inspecciones guardadas en el navegador
+   (`localStorage`), sin enviar datos a un servidor.
+4. **Resumen de calidad:** total de inspecciones, % aprobadas, defecto más frecuente
+   y gráfico de barras accesible por tipo de defecto. Se calcula a partir de la
+   lista de inspecciones que recibe, preparado para integrarse con los filtros.
+
+## Tecnologías
+
+HTML, CSS y JavaScript puros, sin dependencias ni paso de build. Publicada con
+GitHub Pages.
+
+## Estructura del proyecto
+
+| Archivo | Responsabilidad |
+| --- | --- |
+| `index.html` | Formulario, panel de resultado, historial y resumen |
+| `css/styles.css` | Estilos responsive, tema claro/oscuro y accesibilidad |
+| `js/calculos.js` | Funciones puras: % de defectos, dictamen y resumen |
+| `js/storage.js` | Lectura y escritura en `localStorage` |
+| `js/app.js` | Eventos de la interfaz y renderizado |
+| `.github/copilot-instructions.md` | Reglas del proyecto para Copilot y comandos de verificación |
 
 ## Ejecución local
 
-No se requiere instalar dependencias ni iniciar un servidor. Abre `index.html` directamente en un navegador moderno. Las inspecciones se guardan en el almacenamiento local de ese navegador.
+1. Clona el repositorio: `git clone https://github.com/aleonupc/calidad-campo.git`
+2. Abre `index.html` en un navegador moderno. No requiere instalar nada.
 
-## Aplicación
+Prueba de los cálculos (opcional, requiere Node.js): ver los comandos en
+`.github/copilot-instructions.md`.
 
-[Abrir CalidadCampo](https://aleonupc.github.io/calidad-campo/)
+## Flujo de trabajo
 
-## Uso de GitHub Copilot
+El desarrollo siguió el ciclo del workshop "Copilot App": \*\*issue → sesión en
+worktree aislado → revisión de cambios → pull request → merge → despliegue\*\*.
+Cada issue se dejó en una etapa distinta del ciclo para evidenciarlo:
 
-GitHub Copilot puede ayudar a explorar la arquitectura, implementar cambios y revisar su comportamiento. Antes de proponer cambios, consulta `.github/copilot-instructions.md` para conocer el orden de carga de los scripts, las reglas de cálculo y almacenamiento, y los comandos de verificación disponibles. Verifica los cambios con los comandos pertinentes y, para cambios de interfaz, en el navegador.
+| Issue | Estado | Etapa del flujo |
+| --- | --- | --- |
+| #2 Resumen de calidad y gráfico | ✅ Integrado y publicado | Plan ajustado → implementación → PR → merge → GitHub Pages |
+| #1 Filtros del historial | 🔍 PR abierto | Implementado en worktree aislado; pendiente de revisión y merge |
+| #3 Exportación a CSV | 🕓 Backlog | Issue con criterios de aceptación, aún sin implementar |
+
+Solo el código integrado a la rama principal se publica en GitHub Pages; por eso
+los filtros y la exportación CSV no forman parte de la aplicación publicada.
