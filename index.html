@@ -176,7 +176,29 @@
             <dd id="metric-brix">—</dd>
             <span>madurez de la fruta</span>
           </div>
+          <div class="quality-metric metric-top-defect">
+            <dt>Defecto más frecuente</dt>
+            <dd id="metric-top-defect">—</dd>
+            <span id="metric-top-defect-detail">Sin defectos registrados</span>
+          </div>
         </dl>
+        <section class="defect-chart-card" aria-labelledby="defect-chart-title">
+          <div class="defect-chart-heading">
+            <div>
+              <p class="eyebrow">FRECUENCIA</p>
+              <h3 id="defect-chart-title">Frutos afectados por defecto</h3>
+            </div>
+          </div>
+          <p id="defect-chart-empty" class="chart-empty">Sin defectos registrados</p>
+          <svg id="defect-chart-svg" class="defect-chart-svg" viewBox="0 0 360 190" aria-hidden="true" focusable="false" hidden></svg>
+          <div class="visually-hidden">
+            <table>
+              <caption>Cantidades de frutos afectados por tipo de defecto en las inspecciones mostradas</caption>
+              <thead><tr><th scope="col">Defecto</th><th scope="col">Frutos afectados</th></tr></thead>
+              <tbody id="defect-chart-data"></tbody>
+            </table>
+          </div>
+        </section>
         <div class="table-card">
           <div class="table-scroll">
             <table>

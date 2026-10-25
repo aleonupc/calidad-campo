@@ -6,9 +6,9 @@ CalidadCampo is a dependency-free, static Spanish-language web app. Open `index.
 
 The browser app is split into three small responsibilities:
 
-- `js/calculos.js` owns the pure inspection calculation: sum the five defect counts, divide by sample size, and classify the result as Aprobado (≤5%), Observado (>5% and ≤10%), or Rechazado (>10%). It exposes `window.CalidadCalculos`.
+- `js/calculos.js` owns pure inspection calculations: sum the five defect counts, divide by sample size, classify the result as Aprobado (≤5%), Observado (>5% and ≤10%), or Rechazado (>10%), and aggregate quality indicators and defect totals for the inspection list passed to `resumirInspecciones`. It exposes `window.CalidadCalculos`.
 - `js/storage.js` reads and writes the `calidadcampo.inspecciones.v1` localStorage entry and exposes `window.CalidadStorage`. Records are prepended so the newest inspection appears first.
-- `js/app.js` binds the form and live preview, validates and saves submissions, renders the inspection table and quality summary, and reports storage errors. It uses the calculation and storage globals rather than duplicating their logic.
+- `js/app.js` binds the form and live preview, validates and saves submissions, renders the inspection table, quality summary, defect chart and accessible data table, and reports storage errors. It uses the calculation and storage globals rather than duplicating their logic.
 - `index.html` defines the Spanish form, result panel, and history/dashboard markup. Keep its script order aligned with the globals it consumes.
 - `css/styles.css` contains the responsive layout, shared color tokens, dark-mode overrides, and reduced-motion/accessibility styles.
 
@@ -22,6 +22,12 @@ There is no package manifest, build tool, test runner, or linter configured. No 
 
   ```sh
   node -e "const assert=require('node:assert/strict');global.window={};require('./js/calculos.js');const c=window.CalidadCalculos.calcular;const d=n=>({pudricion:n,partidura:0,golpe:0,bajoCalibre:0,quemaduraSol:0});assert.equal(c(100,d(5)).dictamen,'Aprobado');assert.equal(c(100,d(10)).dictamen,'Observado');assert.equal(c(100,d(11)).dictamen,'Rechazado');console.log('Calculation boundaries passed');"
+  ```
+
+- Check inspection aggregation, defect ties, and empty/no-defect histories with Node:
+
+  ```sh
+  node -e "const assert=require('node:assert/strict');global.window={};require('./js/calculos.js');const resumir=window.CalidadCalculos.resumirInspecciones;const inspeccion=(cambios={})=>Object.assign({muestra:100,brix:12,pudricion:0,partidura:0,golpe:0,bajoCalibre:0,quemaduraSol:0},cambios);const resumen=resumir([inspeccion({pudricion:2,golpe:1}),inspeccion({pudricion:1,golpe:2})]);assert.deepEqual(resumen.defectos.map(d=>d.cantidad),[3,0,3,0,0]);assert.deepEqual(resumen.masFrecuentes.map(d=>d.etiqueta),['Pudrición','Golpe']);assert.equal(resumen.maxDefectos,3);assert.deepEqual(resumir([]).masFrecuentes,[]);const sinDefectos=resumir([inspeccion()]);assert.equal(sinDefectos.maxDefectos,0);assert.deepEqual(sinDefectos.masFrecuentes,[]);console.log('Inspection aggregation checks passed');"
   ```
 
 For end-to-end changes, verify the form and live verdict in a browser, save an inspection, reload to check localStorage persistence, and exercise invalid input and keyboard focus.

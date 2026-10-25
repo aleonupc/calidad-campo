@@ -135,15 +135,8 @@
     return cell;
   }
 
-  function renderInspection(inspection) {
+  function renderInspection(inspection, result) {
     const row = document.createElement("tr");
-    const result = window.CalidadCalculos.calcular(inspection.muestra, {
-      pudricion: inspection.pudricion,
-      partidura: inspection.partidura,
-      golpe: inspection.golpe,
-      bajoCalibre: inspection.bajoCalibre,
-      quemaduraSol: inspection.quemaduraSol
-    });
     const dateParts = inspection.fecha.split("-");
     const displayDate = dateParts.length === 3 ? dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0] : inspection.fecha;
 
@@ -164,44 +157,86 @@
   function renderInspections(inspections) {
     const list = document.getElementById("inspection-list");
     const emptyState = document.getElementById("empty-state");
+    const summary = window.CalidadCalculos.resumirInspecciones(inspections);
     list.replaceChildren();
-    inspections.forEach(function (inspection) {
-      list.appendChild(renderInspection(inspection));
+    summary.resultados.forEach(function (resultado, index) {
+      list.appendChild(renderInspection(inspections[index], resultado));
     });
     emptyState.hidden = inspections.length > 0;
     document.getElementById("record-count").textContent = inspections.length + (inspections.length === 1 ? " registro" : " registros");
-    renderQualitySummary(inspections);
+    renderQualitySummary(summary);
+    renderDefectChart(summary);
   }
 
-  function renderQualitySummary(inspections) {
-    const summary = inspections.reduce(function (totals, inspection) {
-      const result = window.CalidadCalculos.calcular(inspection.muestra, {
-        pudricion: inspection.pudricion,
-        partidura: inspection.partidura,
-        golpe: inspection.golpe,
-        bajoCalibre: inspection.bajoCalibre,
-        quemaduraSol: inspection.quemaduraSol
-      });
-      totals.approved += result.dictamen === "Aprobado" ? 1 : 0;
-      totals.defectRate += result.porcentaje;
-      totals.brix += inspection.brix;
-      return totals;
-    }, { approved: 0, defectRate: 0, brix: 0 });
-    const total = inspections.length;
-
-    document.getElementById("metric-total").textContent = formatNumber(total, 0);
-    document.getElementById("metric-approval").textContent = total
-      ? formatNumber((summary.approved / total) * 100, 1) + "%"
+  function renderQualitySummary(summary) {
+    document.getElementById("metric-total").textContent = formatNumber(summary.total, 0);
+    document.getElementById("metric-approval").textContent = summary.total
+      ? formatNumber(summary.porcentajeAprobacion, 1) + "%"
       : "—";
-    document.getElementById("metric-approval-detail").textContent = total
-      ? formatNumber(summary.approved, 0) + " de " + formatNumber(total, 0) + " inspecciones"
+    document.getElementById("metric-approval-detail").textContent = summary.total
+      ? formatNumber(summary.aprobadas, 0) + " de " + formatNumber(summary.total, 0) + " inspecciones"
       : "de las inspecciones";
-    document.getElementById("metric-defects").textContent = total
-      ? formatNumber(summary.defectRate / total, 1) + "%"
+    document.getElementById("metric-defects").textContent = summary.total
+      ? formatNumber(summary.porcentajeDefectosPromedio, 1) + "%"
       : "—";
-    document.getElementById("metric-brix").textContent = total
-      ? formatNumber(summary.brix / total, 1)
+    document.getElementById("metric-brix").textContent = summary.total
+      ? formatNumber(summary.brixPromedio, 1)
       : "—";
+
+    const mostFrequent = summary.masFrecuentes;
+    document.getElementById("metric-top-defect").textContent = mostFrequent.length
+      ? mostFrequent.map(function (defect) { return defect.etiqueta; }).join(" / ")
+      : "—";
+    document.getElementById("metric-top-defect-detail").textContent = mostFrequent.length
+      ? formatNumber(summary.maxDefectos, 0) + (summary.maxDefectos === 1 ? " fruto afectado" : " frutos afectados")
+      : "Sin defectos registrados";
+  }
+
+  function createSvgElement(name, attributes, text) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+    Object.keys(attributes).forEach(function (attribute) {
+      element.setAttribute(attribute, attributes[attribute]);
+    });
+    if (text !== undefined) element.textContent = text;
+    return element;
+  }
+
+  function renderDefectChart(summary) {
+    const svg = document.getElementById("defect-chart-svg");
+    const emptyMessage = document.getElementById("defect-chart-empty");
+    const tableBody = document.getElementById("defect-chart-data");
+    const hasDefects = summary.maxDefectos > 0;
+
+    emptyMessage.hidden = hasDefects;
+    svg.toggleAttribute("hidden", !hasDefects);
+    svg.replaceChildren();
+    tableBody.replaceChildren();
+
+    summary.defectos.forEach(function (defect, index) {
+      const tableRow = document.createElement("tr");
+      tableRow.append(
+        createCell(defect.etiqueta),
+        createCell(formatNumber(defect.cantidad, 0))
+      );
+      tableBody.appendChild(tableRow);
+
+      if (!hasDefects) return;
+
+      const y = 23 + index * 34;
+      const barWidth = (defect.cantidad / summary.maxDefectos) * 140;
+      svg.append(
+        createSvgElement("text", { x: "0", y: String(y), class: "defect-chart-label" }, defect.etiqueta),
+        createSvgElement("rect", {
+          x: "120",
+          y: String(y - 11),
+          width: String(barWidth),
+          height: "16",
+          rx: "4",
+          class: "defect-bar defect-bar-" + defect.campo
+        }),
+        createSvgElement("text", { x: "274", y: String(y), class: "defect-chart-value" }, formatNumber(defect.cantidad, 0))
+      );
+    });
   }
 
   function validateInspection() {
