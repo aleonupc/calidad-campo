@@ -153,8 +153,38 @@
       <section class="history-section" aria-labelledby="history-title">
         <div class="history-heading">
           <div><p class="eyebrow">SEGUIMIENTO</p><h2 id="history-title">Inspecciones recientes</h2></div>
-          <span class="record-count" id="record-count">0 registros</span>
+          <span class="record-count" id="record-count" aria-live="polite">0 registros</span>
         </div>
+        <form class="history-filters" id="history-filters" role="search" aria-label="Filtrar historial de inspecciones">
+          <div class="history-filter-grid">
+            <label class="field">
+              <span>Lote</span>
+              <input id="filter-lote" name="lote" type="search" placeholder="Buscar lote">
+            </label>
+            <label class="field">
+              <span>Variedad</span>
+              <input id="filter-variedad" name="variedad" type="search" placeholder="Buscar variedad">
+            </label>
+            <label class="field">
+              <span>Dictamen</span>
+              <select id="filter-dictamen" name="dictamen">
+                <option value="">Todos los dictámenes</option>
+                <option value="Aprobado">Aprobado</option>
+                <option value="Observado">Observado</option>
+                <option value="Rechazado">Rechazado</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Desde</span>
+              <input id="filter-fecha-desde" name="fechaDesde" type="date">
+            </label>
+            <label class="field">
+              <span>Hasta</span>
+              <input id="filter-fecha-hasta" name="fechaHasta" type="date">
+            </label>
+            <button class="clear-filters-button" id="clear-filters" type="reset">Limpiar filtros</button>
+          </div>
+        </form>
         <dl class="quality-summary" aria-label="Resumen de calidad">
           <div class="quality-metric">
             <dt>Inspecciones</dt>
@@ -193,8 +223,8 @@
             <span class="empty-icon" aria-hidden="true">
               <svg viewBox="0 0 32 32" fill="none"><path d="M8 5.5h11l5 5v16H8a2 2 0 0 1-2-2v-17a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.6"/><path d="M18 5.5v6h6M11 17h10M11 21h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
             </span>
-            <strong>Aún no hay inspecciones</strong>
-            <span>Las inspecciones que guardes aparecerán aquí.</span>
+            <strong id="empty-title">Aún no hay inspecciones</strong>
+            <span id="empty-description">Las inspecciones que guardes aparecerán aquí.</span>
           </div>
         </div>
         <p class="storage-note"><svg aria-hidden="true" viewBox="0 0 18 18" fill="none"><path d="M3.5 5.5h11v9h-11zM6 5.5v-2h6v2M6.5 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Historial almacenado localmente en tu navegador</p>

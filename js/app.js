@@ -15,8 +15,10 @@
     Rechazado: "badge-rejected"
   };
   const form = document.getElementById("inspection-form");
+  const filtersForm = document.getElementById("history-filters");
   const formMessage = document.getElementById("form-message");
   const storageMessage = document.getElementById("storage-message");
+  let savedInspections = [];
 
   document.getElementById("fecha").value = fechaLocal(new Date());
   document.getElementById("today-label").textContent = new Intl.DateTimeFormat("es-PE", {
@@ -137,13 +139,7 @@
 
   function renderInspection(inspection) {
     const row = document.createElement("tr");
-    const result = window.CalidadCalculos.calcular(inspection.muestra, {
-      pudricion: inspection.pudricion,
-      partidura: inspection.partidura,
-      golpe: inspection.golpe,
-      bajoCalibre: inspection.bajoCalibre,
-      quemaduraSol: inspection.quemaduraSol
-    });
+    const result = calculateInspection(inspection);
     const dateParts = inspection.fecha.split("-");
     const displayDate = dateParts.length === 3 ? dateParts[2] + "/" + dateParts[1] + "/" + dateParts[0] : inspection.fecha;
 
@@ -161,6 +157,36 @@
     return row;
   }
 
+  function calculateInspection(inspection) {
+    return window.CalidadCalculos.calcular(inspection.muestra, {
+      pudricion: inspection.pudricion,
+      partidura: inspection.partidura,
+      golpe: inspection.golpe,
+      bajoCalibre: inspection.bajoCalibre,
+      quemaduraSol: inspection.quemaduraSol
+    });
+  }
+
+  function filterInspections(inspections) {
+    const lot = filtersForm.elements.lote.value.trim().toLocaleLowerCase("es");
+    const variety = filtersForm.elements.variedad.value.trim().toLocaleLowerCase("es");
+    const verdict = filtersForm.elements.dictamen.value;
+    const startDate = filtersForm.elements.fechaDesde.value;
+    const endDate = filtersForm.elements.fechaHasta.value;
+
+    return inspections.filter(function (inspection) {
+      return (!lot || inspection.lote.toLocaleLowerCase("es").includes(lot)) &&
+        (!variety || inspection.variedad.toLocaleLowerCase("es").includes(variety)) &&
+        (!verdict || calculateInspection(inspection).dictamen === verdict) &&
+        (!startDate || inspection.fecha >= startDate) &&
+        (!endDate || inspection.fecha <= endDate);
+    });
+  }
+
+  function renderFilteredInspections() {
+    renderInspections(filterInspections(savedInspections));
+  }
+
   function renderInspections(inspections) {
     const list = document.getElementById("inspection-list");
     const emptyState = document.getElementById("empty-state");
@@ -169,19 +195,22 @@
       list.appendChild(renderInspection(inspection));
     });
     emptyState.hidden = inspections.length > 0;
-    document.getElementById("record-count").textContent = inspections.length + (inspections.length === 1 ? " registro" : " registros");
+    const total = savedInspections.length;
+    document.getElementById("record-count").textContent = inspections.length === total
+      ? total + (total === 1 ? " registro" : " registros")
+      : inspections.length + " de " + total + " registros";
+    document.getElementById("empty-title").textContent = total
+      ? "No hay inspecciones con estos filtros"
+      : "Aún no hay inspecciones";
+    document.getElementById("empty-description").textContent = total
+      ? "Prueba ajustar o limpiar los filtros para ver resultados."
+      : "Las inspecciones que guardes aparecerán aquí.";
     renderQualitySummary(inspections);
   }
 
   function renderQualitySummary(inspections) {
     const summary = inspections.reduce(function (totals, inspection) {
-      const result = window.CalidadCalculos.calcular(inspection.muestra, {
-        pudricion: inspection.pudricion,
-        partidura: inspection.partidura,
-        golpe: inspection.golpe,
-        bajoCalibre: inspection.bajoCalibre,
-        quemaduraSol: inspection.quemaduraSol
-      });
+      const result = calculateInspection(inspection);
       totals.approved += result.dictamen === "Aprobado" ? 1 : 0;
       totals.defectRate += result.porcentaje;
       totals.brix += inspection.brix;
@@ -275,8 +304,8 @@
     };
 
     try {
-      const inspections = window.CalidadStorage.guardarInspeccion(inspection);
-      renderInspections(inspections);
+      savedInspections = window.CalidadStorage.guardarInspeccion(inspection);
+      renderFilteredInspections();
       storageMessage.hidden = true;
       form.reset();
       form.elements.fecha.value = fechaLocal(new Date());
@@ -288,9 +317,20 @@
     }
   });
 
+  filtersForm.addEventListener("input", renderFilteredInspections);
+  filtersForm.addEventListener("change", renderFilteredInspections);
+  filtersForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+  });
+  filtersForm.addEventListener("reset", function () {
+    window.setTimeout(renderFilteredInspections, 0);
+  });
+
   try {
-    renderInspections(window.CalidadStorage.obtenerInspecciones());
+    savedInspections = window.CalidadStorage.obtenerInspecciones();
+    renderFilteredInspections();
   } catch (error) {
+    savedInspections = [];
     renderInspections([]);
     storageMessage.textContent = "No se pudo leer el historial local. " + error.message;
     storageMessage.hidden = false;
