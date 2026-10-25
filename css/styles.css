@@ -18,6 +18,11 @@
   --red: #b43e3b;
   --red-soft: #fff0ee;
   --red-border: #f1d1ce;
+  --chart-rot: #b9524d;
+  --chart-split: #bd762f;
+  --chart-impact: #746ea8;
+  --chart-size: #567d9a;
+  --chart-sun: #a6881e;
   --shadow: 0 12px 36px rgba(35, 57, 39, .045), 0 2px 6px rgba(35, 57, 39, .025);
   font-family: "Segoe UI", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-synthesis: none;
@@ -157,15 +162,30 @@ h1 { margin-bottom: 5px; font-size: clamp(27px, 3vw, 34px); font-weight: 680; le
 .history-heading .eyebrow { margin-bottom: 3px; }
 .history-heading h2 { margin: 0; font-size: 19px; font-weight: 680; letter-spacing: -.45px; }
 .record-count { margin-bottom: 2px; padding: 5px 10px; border: 1px solid var(--green-border); border-radius: 99px; background: var(--green-soft); color: var(--green); font-size: 10px; font-weight: 650; }
-.quality-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 17px; }
+.quality-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0 0 17px; }
 .quality-metric { display: grid; align-content: start; gap: 3px; min-width: 0; padding: 14px 15px 13px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-soft); }
 .quality-metric dt { color: var(--muted); font-size: 10px; font-weight: 600; }
 .quality-metric dd { margin: 1px 0 0; color: var(--ink); font-size: 24px; font-weight: 720; font-variant-numeric: tabular-nums; letter-spacing: -.7px; line-height: 1.2; }
 .quality-metric > span { overflow: hidden; color: var(--muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.metric-top-defect dd { overflow-wrap: anywhere; font-size: 14px; letter-spacing: -.2px; line-height: 1.35; }
 .metric-approval { border-color: var(--green-border); background: var(--green-soft); }
 .metric-approval dd { color: var(--green); }
 .metric-defects { border-color: var(--amber-border); }
 .metric-brix { border-color: var(--line-strong); }
+.defect-chart-card { margin-bottom: 17px; padding: 15px 17px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.defect-chart-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.defect-chart-heading .eyebrow { margin-bottom: 2px; }
+.defect-chart-heading h3 { margin: 0; color: var(--ink); font-size: 13px; font-weight: 680; }
+.defect-chart-svg { display: block; width: 100%; max-width: 430px; height: auto; overflow: visible; }
+.defect-chart-svg[hidden] { display: none; }
+.defect-chart-label, .defect-chart-value { fill: var(--ink); font-family: inherit; font-size: 10px; }
+.defect-chart-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.defect-bar-pudricion { fill: var(--chart-rot); }
+.defect-bar-partidura { fill: var(--chart-split); }
+.defect-bar-golpe { fill: var(--chart-impact); }
+.defect-bar-bajoCalibre { fill: var(--chart-size); }
+.defect-bar-quemaduraSol { fill: var(--chart-sun); }
+.chart-empty { margin: 10px 0 4px; color: var(--muted); font-size: 11px; }
 .table-card { overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
 .table-scroll { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
@@ -201,6 +221,7 @@ td:first-child { color: var(--ink); font-weight: 600; }
   .inspection-card { padding: 20px; }
   .field-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .defect-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quality-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .site-footer { width: min(760px, calc(100% - 40px)); }
 }
 
@@ -225,6 +246,9 @@ td:first-child { color: var(--ink); font-weight: 600; }
   .quality-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
   .quality-metric { padding: 12px; }
   .quality-metric dd { font-size: 21px; }
+  .metric-top-defect dd { font-size: 14px; }
+  .defect-chart-card { padding: 13px 11px 10px; }
+  .defect-chart-label, .defect-chart-value { font-size: 10px; }
   .site-footer { width: calc(100% - 32px); flex-direction: column; gap: 4px; margin-top: 28px; }
 }
 
@@ -265,6 +289,11 @@ td:first-child { color: var(--ink); font-weight: 600; }
     --red: #ee8982;
     --red-soft: #3c2626;
     --red-border: #5a3332;
+    --chart-rot: #ed837d;
+    --chart-split: #e6a35e;
+    --chart-impact: #aaa4df;
+    --chart-size: #8db7d4;
+    --chart-sun: #e0c65d;
     --shadow: 0 12px 36px rgba(0, 0, 0, .14), 0 2px 6px rgba(0, 0, 0, .1);
   }
   body { background: radial-gradient(ellipse at 84% 2%, rgba(67, 99, 68, .16), transparent 32rem), var(--page); }
