@@ -1,0 +1,58 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/app.js
+          node --check js/calculos.js
+          node --check js/storage.js
+      - name: Check calculation boundaries
+        run: |
+          node -e "const assert=require('node:assert/strict');global.window={};require('./js/calculos.js');const c=window.CalidadCalculos.calcular;const d=n=>({pudricion:n,partidura:0,golpe:0,bajoCalibre:0,quemaduraSol:0});assert.equal(c(100,d(5)).dictamen,'Aprobado');assert.equal(c(100,d(10)).dictamen,'Observado');assert.equal(c(100,d(11)).dictamen,'Rechazado');console.log('Calculation boundaries passed');"
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
